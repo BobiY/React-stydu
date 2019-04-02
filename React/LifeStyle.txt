@@ -1,0 +1,105 @@
+React 生命周期
+
+    每个类组件都是拥用生命周期的，我们可以在其中进行初始化数据，或者做一下其他事情。
+
+    加载：
+
+        在组件被实例化插入 DOM 的过程中，会按照一下顺序进行：
+
+            constructor();
+
+            static getDerivedStateFromProps();
+
+            render();
+
+            componentDidMount();
+
+
+        熟悉 react 的应该会感到奇怪， 在 render 之前执行的应该是 componentWillMount 这个静态方法 getDerivedStateFromProps 是做什么的呢？
+
+            这个函数在每次 props 更新时都会被调用，但是在 setState 期间是不会调用的，同时，在每次父组件更新时，他也会执行，如果你需要根据父组件
+
+        传递的 props 去更新当前子组件的 state，这时，你就可以通过这个生命周期函数返回出一些根据 props 生成的 state; 
+
+            eg:
+
+                getDerivedStateFromProps(nextProps, prevState) {
+                    return {
+                        data: nextProps.data
+                    }
+                }
+
+                返回的这个对象会跟当前的 state 进行合并处理，生成新的 state。
+
+            
+            在 React 16.3 版本以后， componentWillMount 将和 UNSAFE_componentWillMount 同时存在，
+        
+        但在 v17.X 以后，只存在后者，所以在使用 React 时应该注意版本。
+
+    更新：
+
+        当一个组件被重新渲染时，会按照一下顺序执行：
+
+            static getDerivedStateFromProps();
+
+            shouldComponentUpdate();
+
+            render();
+
+            getSnapshotBeforeUpdate();
+
+            componentDidUpdate();
+
+            这里先来介绍一下新成员 getSnapshotBeforeUpdate, 此函数的作用时代替了 componentWillUpdate, 此函数是在最新的 DOM 生成以后，
+        
+        立马执行，此时你可以使用 ref 为新的 DOM 添加一些需要的属性或者获取一下自己需要的值。
+
+    错误捕获：
+
+        React 新增了错误捕获的生命周期函数，可以在出现错误时即使的处理，进行 loading 显示和弹窗提示。
+
+        static getDerivedStateFromError()
+
+        componentDidCatch()
+
+        如果一个组件定义了这两个函数中的其中一个或者两个，当自这个组件往下的组件树出错误时，就会对错误进行捕捉，这时，你就可以进行处理，
+
+        显示 loading 或者弹窗提醒用户出错了。
+
+        这两个函数接受的参数有些区别，第一个只接受 error 作为参数，而第二个接受 error 和 info（一些错误的堆栈信息）为参数。
+
+        * 更深的区别：
+
+            static getDerivedStateFromError(error); 
+
+                这个函数接受 error 作为参数，此函数应该返回一个同 getDerivedStateFromProps 的对象，同样这个对象会被合并进 state 中，
+
+                然后在触发 render 时，就可以进行错误以后的处理。
+
+                * 注意：不要在这个函数里使用 setState，这是不允许的。想要更新 state，直接返回一个要更新的对象即可。
+
+
+            componentDidCatch(error, info);
+
+                这个函数接受的参数会更多更全，包含错误和错误的堆栈信息，你可以将这些信息写入 log 中。这个函数里可以调用 setState,
+
+            因为这个函数在调用时，错误已经发生。
+
+    即将抛弃的生命周期函数：
+
+        componentWillMount();  16.3 以后的别名函数  UNSAFE_componentWillMount();
+
+        componentDidUpdate(); 16.3 以后的别名函数  UNSAFE_componentDidUpdate();
+
+        componentWillReceiveProps(); 16.3 以后的别名 UNSAFE_componentWillReceiveProps();
+
+        上述生命周期函数的移除是逐步的，将在 17 以后的版本中移除，这里需要注意。后面的章节 old_vs_new_life_style 中将会重点
+
+        介绍上面几个生命周期函数存在的问题和替代函数。
+
+
+
+
+
+
+

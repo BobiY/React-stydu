@@ -1,0 +1,50 @@
+React Api
+
+    setState:
+        这是官方推荐使用的类组件更新状态的 Api，接受一个 js 对象作为参数，一旦调用，就会触发类组件的重新渲染。
+
+        这个 Api 还接受一个可选的参数，callback，当此次的 state 更新完毕后会执行这个回调函数。
+
+        eg：
+            class App extends React.Component{
+                constructor(props) {
+                    super(props);
+                    this.state = {
+                        loading: false
+                    }
+                }
+
+                componentWillMount() {
+                    this.setState({ loading: true }, () => {
+                        // do something
+                    });
+
+                    this.setState( (prevState, props) => {
+                        return {
+                            loading: prevState.loading && props.loading
+                        }; 
+                    } )
+                }
+
+                render() {
+                    return <span>Hello World</span>
+                }
+            }
+        这里需要注意的是，如果需要在 callback 中调用 this.state, 这时的 state 并不包含前面参数的更新。
+
+            上述的第二种用法直接传递一个回调函数，prevState 指的是当前组件的 this.state，props 是当前组件的 this.props, 你可以根据这两个数据去
+        计算出自己需要的 state，并作为最终返回值；
+
+            一般直接传递一个需要更新的 state 对象的用法就能满足大部分业务的需求，但是其他的用法也会有使用的场景，这里只是做 Api 的使用介绍，不做过多的
+        讨论。
+
+
+    forceUpdate:
+
+        * 这个 Api 没有参数，只是单纯的引起组件重新执行 render 方法刷新 DOM。
+
+        这个 Api 的作用跟 setState 类似，但是会跳过 shouldComponentUpdate 生命周期函数，也就是只要调用此方法，render 函数是一定会执行的。
+
+        当然，如果你有非来自 state 和 props 的外部数据要使组件重新渲染时，可以调用此方法。但是绝大多数情况下，这个方法不要调用。
+
+            

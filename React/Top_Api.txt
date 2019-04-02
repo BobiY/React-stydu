@@ -1,0 +1,68 @@
+React Top Api
+
+    React 顶层 Api 存在于 React 上，可以直接全局调用。
+
+    1. 如果你是通过 <script> 标签引用的 React ，你可以直接使用 React.xxApi 进行调用
+
+    2. 如果你是通过 var React = require("react"); , 你可以使用 React.XXApi 进行调用
+
+    3. 如果你是通过 import React from "react"; 你可以使用 React.xxApi 进行调用
+
+
+    Component:
+
+        React.Component; 在使用 ES6 定义组件时，通常会继承这个基类。
+
+        React.PureComponent; 也是基类的一种，实现是包含了 shouldComponentUpdate，但是只对新旧 props 进行了较浅的比较，
+
+        可以用于提高渲染性能。
+
+        * 这里推荐你去使用 React.Component。
+
+        React.memo; 这个方法是一个高阶组件，他接受一个函数组件作为参数，同时还接受一个可选的 props 比较的函数作为参数
+
+            eg：  function MyCom(props) {};
+
+            const NewCom = React.memo( MyCom, (prevProps, newProps) => { return prevProps === newProps } );
+
+
+        这里注意，这里第二个参数的返回值于 shouldComponentUpdate，相反，当新旧属性值相同的时候，返回的是 true，否则返回 false。
+
+        shouldComponentUpdate，是当需要更新是返回 true，否则返回 false。
+
+    Fragments：
+
+        React.Fragment; 这个组件允许你在 render 返回多行的 JSX，而不需要在最外层包括一个额外的元素。
+
+        eg:
+            class App extends React.Component{
+                constructor(props){
+                    super(props);
+                };
+
+                render() {
+                    return (
+                        <React.Fragment>
+                            aaa
+                            <span>bbbb</span>
+                        </React.Fragment>
+                    )
+                }
+            }
+
+    Refs:
+
+        React.createRef; 这个是在创建一个组件实例的引用。
+
+        eg：
+            class App extends React.Component{
+                constructor(props) {
+                    super(props);
+                    this.inputRef = React.createRef();
+                }
+
+                render() {
+                    return <input ref={this.inputRef} />
+                }
+            }
+

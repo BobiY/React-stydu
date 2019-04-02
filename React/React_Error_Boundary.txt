@@ -1,0 +1,55 @@
+React Error Boundaries
+
+    在 React 16 以后，引入了错误边界的概念：
+
+        错误边界是用于捕获其子组件树的 js 异常，记录错误并展示一个回退 UI 的 React 组件，而不是整个组件树的异常。
+
+        错误边界在渲染期间、生命周期方法内、以及整个组件树构造函数内捕获错误。
+
+    错误边界捕获不到的异常：
+
+        a. 事件处理
+
+        b. 异步代码（包含定时器，请求服务器等）
+
+        c. 服务端渲染
+
+        d. 错误边界自身抛出的异常
+
+    将组件定义为错误边界：
+
+        当一个组件中出现 static getDervicedStateFromError(error) 或者 componentDidCatch(error, info) 时，这个组件就成为了错误边界。
+
+            这里需要的注意的是，getDervicedStateFromError 返回一个新的 state，回和老的 state 合并成新的 state，触发 render，所以这个函数的
+
+        作用是渲染一个回退的 UI。 而 componentDidCatch 的作用是记录一下错误信息。
+
+        eg：
+
+            class ErrorBoundary extends React.Component {
+                constructor(props) {
+                    super(props);
+                    this.state = { hasError: false };
+                }
+
+                static getDerivedStateFromError(error) {
+                    // 更新state 并渲染一个回退的 UI.
+                    return { hasError: true };
+                }
+
+                componentDidCatch(error, info) {
+                    // 发送错误信息到服务器
+                    logErrorToMyService(error, info);
+                }
+
+                render() {
+                    if (this.state.hasError) {
+                    // You can render any custom fallback UI
+                    return <h1>Something went wrong.</h1>;
+                    }
+
+                    return this.props.children; 
+                }
+            }
+
+        * 时刻注意：错误边界仅仅可以捕获组件树中比他低的组件的错误。
