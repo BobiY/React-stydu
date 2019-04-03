@@ -1,0 +1,185 @@
+React UNSEAF lifecycles
+
+    React 的架构在不断地调整，相应的，实现方式和包含的钩子函数也在不断的调整；调整是为了更好的方便开发，减少 bug；
+
+    First: componentWillMount 
+
+           熟悉 React 的人对这个生命周期函数一定不陌生，他是我们在 render 之前最后一次改变 state 的最佳时机；
+           
+           想一想我们会在其中做些什么事情？；
+
+                1. 根据 props 去改变我们的组件状态。
+                2. 去请求服务器，获得一些页面的初始化数据。（可能有时候，我们为了让异步代码同步运行，使用 async 对其进行包装。）
+
+            可能在日常使用中还有其他的情况，但是可以肯定的是，在过去的日子里，这个生命周期钩子，给我们的开发带来了很多便利。
+
+            但是技术在发展，他也将逐步的退出历史舞台。（可能就像 jq 一样，热度在逐步下降）
+
+
+            我们现在将上面的几点拆开来看：
+
+                1. 根据 props 去重置组件状态。
+
+                    想一想组件在初始化的运行顺序  
+                    
+                        constructor
+
+                        getDerivcedStateFormProps (以前这里是 componentWillMount)
+
+                        render
+
+                        componentDidMount   
+
+                    如果你只是简单的根据 props 去重置组价的 state 的话，你完全可以在 constructor 中直接这么做，而不必在 componentWillMount
+
+                    中做这件事情，因为这样子会使你的 state 初始化变得不清晰。
+
+                    eg：
+
+                        class App extends React.Component{
+                            constructor(props) {
+                                super(props);
+                                this.state = {};
+                            }
+
+                            componentWillMount() {
+                                this.setState({loading: this.props.loading});
+                            }
+
+                            // other things
+                        }
+
+                    浏览这样子的代码你不得不往下浏览，你才可能知道 state 里面包含什么，如果不进行初始化，在异步请求里进行初始化，那中酸爽，
+                    
+                    自己体会。
+
+                    其实我们可以改进下上面的例子：
+
+                        class App extends React.Component{
+                            constructor(props) {
+                                super(props);
+                                this.state = {
+                                    loading: this.props.loading
+                                }
+                            }
+
+                            // other things
+                        }
+                    
+                    这样你就能很清晰的看到 loading 的初始值出身何处，而且也省去了不必要的代码。
+                
+                2. 去请求服务器，获得一些页面的初始化数据。
+
+                        其实仔细想一想，你这样子做的目的，无非就是 React（其实是一种假象）承诺过，componentWillMount 会在 render 之前执行。
+
+                    是的，React 也是这么做的；但是，实际上，React 在 componentWillMount 运行以后，是立即执行 render 的，而不是期望中的
+
+                    等待 componentWillMount 结束之后在执行 render， 所以，异步请求在返回之前，render 时获取的数据依然是空的，你显示的依然
+
+                    是 loading 方案。 
+
+                        而且更重要的是，在 React 16.x 以后，由于架构的调整，React 不再保证 componentWillxxx 系的生命周期钩子只运行一次，
+
+                    想一想就可怕，你的请求可能走了几次，但是数据确是一样的，而且你的组件树会随着每一次请求的到来而不断刷新。 
+
+                        所以，为了保证初始化的请求只发送一次，你可以将初始化请求服务器的代码移到 componentDidMount 之中，这个函数 React
+                    
+                    保证他只会运行一次。
+
+    Second componentWillReceiveProps
+
+            这个生命周期钩子也是同样的经典，但是同样的存在问题。他的使用场景是在接收到新的 props 时（注意，这里包括父组件刷新）就会运行。
+
+            我们通常在这里做的事情与 componentWillMount 一致。
+
+                1. 根据 props 去改变 state。
+                2. 做一些异步请求。
+
+            所以他存在的问题与 componentWillMount 也有一样的地方，至于他的替代方案，我们后续讲。不过这里存在一些区别，就是当你需要在
+
+            这个生命周期里进行请求时，他的替代方案比较复杂。
+    
+    Third componentWillUpdate
+
+            这个生命周期钩子使用的场景很少，因为他在每次组件更新时都会运行（这里注意，不保证每次更新只运行一次）。所以这个函数内部是不允许
+
+            修改状态（虽然他的运行时机跟 componentWillMount 一样）。但是这个函数的表现可以说是这三个函数中最好的（很少使用）。但是前面说过
+
+            技术在更新，架构在调整，在 17.x 中将添加异步渲染，这个函数就不能很好的完成他应该完成的工作了。所以他也将退出历史。
+
+React New lifecycles
+
+    First getDerivcedStateFormProps(prevProps, prevState);
+
+        这个函数是新的生命周期钩子，目前来讲，他会在 props（包括父组件刷新） 和 state 更新时被触发。这个生命周期里你不应该直接调用
+
+        this.setState 对数据进行更新，而是直接将你需要修改的 state 对象作为返回值返回，React 将自动合并并更新组件 state。
+
+        eg：
+            class App extends React.Component{
+                constructor(props) {
+                    super(props);
+                    this.state = {
+                        loading: this.props.loading
+                    }
+                }
+
+                static getDerivcedStateFormProps(prevProps, prevState) {
+                    // 注意，静态方法中是不能访问 this 的，因为他不属于任何实例
+                    return {
+                        loading: prevProps.loading
+                    }
+                }
+
+                // other things
+            }
+
+    Second getSnapshotBeforeUpdate(prevProps, prevState);
+
+        这个函数是在每次组件更新时触发，注意，他的触发时机是在 DOM 生成以后，而不是之前，这样你就能更加便捷的获取 DOM 的信息。这个函数可以有
+
+        返回值，这个值会当做 componentDidUpdate 的第三个参数传入。
+
+            eg：
+
+                class App extends React.Component{
+                    constructor(props) {
+                        super(props);
+                    }
+
+                    getSnapshotBeforeUpdate(prevProps, prevState) {
+                        return somthing;
+                    }
+
+                    componentDidUpdate(props, state, somthing) {
+                        // do somthing;
+                    }
+                }
+
+        *注意：此时接受的 prevProps 和 this.props 还没合并可以在这里进行区分比较
+
+Replace Plan
+
+    根据以上的介绍，我们不能看出新旧生命周期函数有相似也有不同，下面是一些建议性的替代方案：
+
+        componentWillMount:
+
+            constructor 根据 props 初始化 state；
+
+            componentDidMount 进行服务器请求
+
+
+        componentWillReceiveProps：
+
+            static getDerivcedStateFormProps 根据 props 去更改 state;
+
+            getSnapshotBeforeUpdate 去判断 props 的改变是否需要请求服务器；
+
+            componentDidUpdate 根据上一步的判断去请求服务器
+
+        componentWillUpdate:
+
+            直接用 getSnapshotBeforeUpdate 替代。
+
+                
+         

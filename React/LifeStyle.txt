@@ -17,7 +17,7 @@ React 生命周期
 
         熟悉 react 的应该会感到奇怪， 在 render 之前执行的应该是 componentWillMount 这个静态方法 getDerivedStateFromProps 是做什么的呢？
 
-            这个函数在每次 props 更新时都会被调用，但是在 setState 期间是不会调用的，同时，在每次父组件更新时，他也会执行，如果你需要根据父组件
+            这个函数在每次 props 更新(或者父组件刷新，这时的 props 可能没有改变)时都会被调用，在 setState 期间是会被调用，同时，在每次父组件更新时，他也会执行，如果你需要根据父组件
 
         传递的 props 去更新当前子组件的 state，这时，你就可以通过这个生命周期函数返回出一些根据 props 生成的 state; 
 
